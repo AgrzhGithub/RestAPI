@@ -29,6 +29,8 @@ func (s *Store) Open() error {
 
 	s.db = db
 
+	s.userRepository = &UserRepository{store: s}
+
 	return nil
 }
 

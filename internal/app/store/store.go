@@ -7,35 +7,14 @@ import (
 )
 
 type Store struct {
-	config         *Config
 	db             *sql.DB
 	userRepository *UserRepository
 }
 
-func New(config *Config) *Store {
-	return &Store{
-		config: config}
-}
-
-func (s *Store) Open() error {
-	db, err := sql.Open("postgres", s.config.DatabaseURL)
-	if err != nil {
-		return err
-	}
-
-	if err := db.Ping(); err != nil {
-		return err
-	}
-
-	s.db = db
-
-	s.userRepository = &UserRepository{store: s}
-
-	return nil
-}
-
-func (s *Store) Close() {
-	s.db.Close()
+func New(db *sql.DB) *Store {
+	store := &Store{db: db}
+	store.userRepository = &UserRepository{store: store}
+	return store
 }
 
 func (s *Store) User() *UserRepository {

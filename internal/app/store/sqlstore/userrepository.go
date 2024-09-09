@@ -1,35 +1,32 @@
-package store
+package sqlstore
 
 import (
 	"RestApi/internal/app/model"
-	"github.com/pkg/errors"
+	"RestApi/internal/app/store"
+	"database/sql"
 )
 
 type UserRepository struct {
 	store *Store
 }
 
-func (r *UserRepository) Create(u *model.User) (*model.User, error) {
-	if r.store == nil {
-		return nil, errors.New("store is nil")
-	}
+func (r *UserRepository) Create(u *model.User) error {
+	//if r.store == nil {
+	//	return nil
+	//}
 
 	if err := u.Validate(); err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := u.BeforeCreate(); err != nil {
-		return nil, err
+		return err
 	}
 
-	if err := r.store.db.QueryRow("INSERT INTO users (email, encrypted_password) VALUES ($1,$2) RETURNING id",
+	return r.store.db.QueryRow("INSERT INTO users (email, encrypted_password) VALUES ($1,$2) RETURNING id",
 		u.Email,
 		u.EncryptedPassword,
-	).Scan(&u.ID); err != nil {
-		return nil, err
-	}
-
-	return u, nil
+	).Scan(&u.ID)
 }
 
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
@@ -42,6 +39,9 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 		&u.Email,
 		&u.EncryptedPassword,
 	); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrRecordNotFound
+		}
 		return nil, err
 	}
 	return u, nil

@@ -25,8 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	serv := apiserver.New(config)
-	if err := serv.Start(); err != nil {
+	if err := apiserver.Start(config); err != nil {
 		log.Fatal(err)
 	}
 }
